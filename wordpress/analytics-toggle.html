@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Tracking Toggle - Jarheads.net</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .status-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px solid #e9ecef;
+        }
+
+        .status-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .status-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .status-value.enabled {
+            color: #28a745;
+        }
+
+        .status-value.disabled {
+            color: #dc3545;
+        }
+
+        .status-description {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .toggle-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 16px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .toggle-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-button:active {
+            transform: translateY(0);
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin-top: 20px;
+            text-align: left;
+            border-radius: 4px;
+        }
+
+        .info-box h3 {
+            color: #1976d2;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .info-box p {
+            color: #555;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        .info-box ul {
+            margin-left: 20px;
+            color: #555;
+            font-size: 13px;
+        }
+
+        .info-box li {
+            margin-bottom: 5px;
+        }
+
+        .cookie-info {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .cookie-info h3 {
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .cookie-value {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #666;
+            word-break: break-all;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .status-value {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Analytics Tracking Toggle</h1>
+        <p class="subtitle">Jarheads.net Site Owner Control Panel</p>
+
+        <div class="status-card">
+            <div class="status-label">Current Status</div>
+            <div id="status-value" class="status-value">Checking...</div>
+            <div id="status-description" class="status-description">Loading current tracking status...</div>
+        </div>
+
+        <button id="toggle-btn" class="toggle-button" onclick="toggleTracking()">
+            Toggle Tracking
+        </button>
+
+        <div class="info-box">
+            <h3>ℹ️ What does this do?</h3>
+            <p><strong>When tracking is DISABLED:</strong></p>
+            <ul>
+                <li>Your visits won't be counted in analytics</li>
+                <li>A cookie is set: <code>jh_exclude_tracking=1</code></li>
+                <li>Only applies to THIS browser/device</li>
+                <li>Cookie lasts for 1 year</li>
+            </ul>
+            <p style="margin-top:10px;"><strong>When tracking is ENABLED:</strong></p>
+            <ul>
+                <li>Your visits are tracked like any other visitor</li>
+                <li>Useful for testing analytics</li>
+            </ul>
+        </div>
+
+        <div class="cookie-info">
+            <h3>Technical Details</h3>
+            <div class="cookie-value" id="cookie-display">
+                Loading cookies...
+            </div>
+            <p style="color: #666; font-size: 12px; text-align: left;">
+                <strong>Tip:</strong> Bookmark this page for easy access. You can toggle tracking anytime you want to browse without being tracked.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function getCookie(name) {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.indexOf(name + '=') === 0) {
+                    return cookie.substring(name.length + 1);
+                }
+            }
+            return null;
+        }
+
+        function setCookie(name, value, days) {
+            const date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            const expires = 'expires=' + date.toUTCString();
+            document.cookie = name + '=' + value + ';' + expires + ';path=/;SameSite=Lax';
+        }
+
+        function deleteCookie(name) {
+            document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;';
+        }
+
+        function isTrackingDisabled() {
+            return getCookie('jh_exclude_tracking') === '1';
+        }
+
+        function updateStatus() {
+            const statusValue = document.getElementById('status-value');
+            const statusDescription = document.getElementById('status-description');
+            const toggleBtn = document.getElementById('toggle-btn');
+
+            if (isTrackingDisabled()) {
+                statusValue.textContent = '🚫 Disabled';
+                statusValue.className = 'status-value disabled';
+                statusDescription.textContent = 'Your visits are NOT being tracked. You can browse freely without affecting analytics.';
+                toggleBtn.textContent = '✅ Enable Tracking';
+            } else {
+                statusValue.textContent = '✅ Enabled';
+                statusValue.className = 'status-value enabled';
+                statusDescription.textContent = 'Your visits ARE being tracked. Disable tracking to browse without affecting analytics.';
+                toggleBtn.textContent = '🚫 Disable Tracking';
+            }
+
+            // Update cookie display
+            const cookieDisplay = document.getElementById('cookie-display');
+            const allCookies = document.cookie || '(no cookies set)';
+            cookieDisplay.textContent = allCookies;
+        }
+
+        function toggleTracking() {
+            if (isTrackingDisabled()) {
+                // Enable tracking (delete exclusion cookie)
+                deleteCookie('jh_exclude_tracking');
+                alert('✅ Tracking ENABLED\n\nYour visits will now be counted in analytics.\n\nRefresh any open pages for this to take effect.');
+            } else {
+                // Disable tracking (set exclusion cookie)
+                setCookie('jh_exclude_tracking', '1', 365); // 1 year
+                alert('🚫 Tracking DISABLED\n\nYour visits will no longer be counted in analytics.\n\nRefresh any open pages for this to take effect.');
+            }
+
+            updateStatus();
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            updateStatus();
+        });
+    </script>
+</body>
+</html>

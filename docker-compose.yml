@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  marine-corps-aggregator:
+    build: .
+    container_name: usmc-news-crawler
+    volumes:
+      - ./data:/app/data
+    environment:
+      - DATABASE_PATH=/app/data/marine_corps_news.db
+      - OUTPUT_PATH=/app/data/marine_corps_news.json
+    restart: unless-stopped
+    
+  # Optional: Add a simple web server to serve the dashboard
+  dashboard:
+    image: nginx:alpine
+    container_name: usmc-dashboard
+    ports:
+      - "8080:80"
+    volumes:
+      - ./data/dashboard.html:/usr/share/nginx/html/index.html:ro
+      - ./data:/usr/share/nginx/html/data:ro
+    restart: unless-stopped

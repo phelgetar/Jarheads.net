@@ -1,0 +1,281 @@
+========================================
+SECURITY AUDIT - ACTION LOG
+Date: Sat Jan 10 22:09:08 MST 2026
+Audit Directory: /home1/jarheads/security_audit_20260110_220908
+========================================
+
+=== STEP 1: BACKING UP FILES ===
+Timestamp: Sat Jan 10 22:11:40 MST 2026
+
+1.1 Backing up db_config.php...
+-rw-r--r-- 1 jarheads jarheads 1344 Oct 14 18:58 /home1/jarheads/public_html/db_config.php
+   Backed up to: /home1/jarheads/security_audit_20260110_220908/backups/db_config.php.backup
+
+1.2 Backing up wp-config.php files...
+-rw-r--r-- 1 jarheads jarheads 3956 Sep 20 21:03 /home1/jarheads/public_html/wp-config.php
+-rw-r--r-- 1 jarheads jarheads 3905 Jan 13  2023 /home1/jarheads/public_html/canadytw/wp-config.php
+-rw-r--r-- 1 jarheads jarheads 3857 Jan 13  2023 /home1/jarheads/public_html/canadytw/adminBackup/wp-config.php
+   All wp-config.php files backed up
+
+1.3 Documenting log files...
+-rw-r--r-- 1 jarheads jarheads 117K Oct 11 16:15 /home1/jarheads/public_html/api-bck.log
+-rw-r--r-- 1 jarheads jarheads 538K Oct 15 13:39 /home1/jarheads/public_html/api.log
+-rw-r--r-- 1 jarheads jarheads  26K Oct 11 16:14 /home1/jarheads/public_html/importer-bck.log
+-rw-r--r-- 1 jarheads jarheads  63K Dec 13 01:13 /home1/jarheads/public_html/importer.log
+-rw-r--r-- 1 jarheads jarheads  12K Oct 11 12:26 /home1/jarheads/public_html/proxy.log
+-rw-r--r-- 1 jarheads jarheads 3.7M Nov  4 08:40 /home1/jarheads/public_html/tomtom_api.log
+
+1.4 Documenting MOJO installer files...
+-rw------- 1 jarheads jarheads 28774 Mar 27  2014 /home1/jarheads/public_html/MOJOWordpressInstaller-TIT68wL7tW.php
+-rw-r--r-- 1 jarheads jarheads  3040 Mar 27  2014 /home1/jarheads/public_html/MOJOWordpressInstaller-TIT68wL7tW.state.json
+-rw-r--r-- 1 jarheads jarheads 28768 Apr 10  2014 /home1/jarheads/public_html/MOJOWordpressInstaller-hGboODPaWZ.php
+-rw-r--r-- 1 jarheads jarheads  3046 Apr 10  2014 /home1/jarheads/public_html/MOJOWordpressInstaller-hGboODPaWZ.state.json
+
+✓ All files backed up successfully
+
+=== STEP 2: FIX DATABASE CONFIG EXPOSURE ===
+Timestamp: Sat Jan 10 22:14:11 MST 2026
+
+2.1 Moving db_config.php outside public_html...
+   Original location: ~/public_html/db_config.php
+   New location: ~/private/db_config.php
+
+2.2 Setting secure permissions (600)...
+-rw------- 1 jarheads jarheads 1344 Oct 14 18:58 /home1/jarheads/private/db_config.php
+   Permissions set to: 600 (owner read/write only)
+
+2.3 Finding scripts that reference db_config.php...
+/home1/jarheads/public_html/seed_route.php
+
+⚠ MANUAL ACTION REQUIRED:
+   Update the above scripts to use new path:
+   OLD: require_once('db_config.php');
+   NEW: require_once('/home1/jarheads/private/db_config.php');
+
+✓ Database config secured
+
+2.4 Updating seed_route.php to use new config path...
+   Checking updated reference:
+ * - Loads DB config from db_config.php (same folder)
+$cfgFile = __DIR__ . '/db_config.php';
+if (!is_readable($cfgFile)) { http_response_code(500); echo "db_config.php missing: $cfgFile\n"; exit(1); }
+✓ Script updated
+
+2.5 Fixing __DIR__ based path in seed_route.php...
+   Updated line:
+$cfgFile = '/home1/jarheads/private/db_config.php';
+✓ Path correctly updated
+
+=== STEP 3: MOVE LOG FILES OUTSIDE PUBLIC_HTML ===
+Timestamp: Sat Jan 10 22:14:45 MST 2026
+
+3.1 Moving log files...
+   Moving: api-bck.log
+   - From: ~/public_html/api-bck.log
+   - To: ~/logs/api-bck.log
+   Moving: api.log
+   - From: ~/public_html/api.log
+   - To: ~/logs/api.log
+   Moving: importer-bck.log
+   - From: ~/public_html/importer-bck.log
+   - To: ~/logs/importer-bck.log
+   Moving: importer.log
+   - From: ~/public_html/importer.log
+   - To: ~/logs/importer.log
+   Moving: proxy.log
+   - From: ~/public_html/proxy.log
+   - To: ~/logs/proxy.log
+   Moving: tomtom_api.log
+   - From: ~/public_html/tomtom_api.log
+   - To: ~/logs/tomtom_api.log
+
+3.2 Verifying log files moved:
+-rw-r--r-- 1 jarheads jarheads 117K Oct 11 16:15 /home1/jarheads/logs/api-bck.log
+-rw-r--r-- 1 jarheads jarheads 538K Oct 15 13:39 /home1/jarheads/logs/api.log
+-rw-r--r-- 1 jarheads jarheads  26K Oct 11 16:14 /home1/jarheads/logs/importer-bck.log
+-rw-r--r-- 1 jarheads jarheads  63K Dec 13 01:13 /home1/jarheads/logs/importer.log
+-rw-r--r-- 1 jarheads jarheads  12K Oct 11 12:26 /home1/jarheads/logs/proxy.log
+-rw-r--r-- 1 jarheads jarheads 3.7M Nov  4 08:40 /home1/jarheads/logs/tomtom_api.log
+
+✓ All log files secured
+
+=== STEP 4: FIX FILE PERMISSIONS ON CONFIG FILES ===
+Timestamp: Sat Jan 10 22:15:31 MST 2026
+
+4.1 Current permissions:
+-rw-r--r-- 1 jarheads jarheads 3956 Sep 20 21:03 /home1/jarheads/public_html/wp-config.php
+-rw-r--r-- 1 jarheads jarheads 3905 Jan 13  2023 /home1/jarheads/public_html/canadytw/wp-config.php
+-rw-r--r-- 1 jarheads jarheads 3857 Jan 13  2023 /home1/jarheads/public_html/canadytw/adminBackup/wp-config.php
+
+4.2 Setting secure permissions (600)...
+   Changed from: -rw-r--r-- (644)
+   Changed to:   -rw------- (600)
+
+4.3 Verifying new permissions:
+-rw------- 1 jarheads jarheads 3956 Sep 20 21:03 /home1/jarheads/public_html/wp-config.php
+-rw------- 1 jarheads jarheads 3905 Jan 13  2023 /home1/jarheads/public_html/canadytw/wp-config.php
+-rw------- 1 jarheads jarheads 3857 Jan 13  2023 /home1/jarheads/public_html/canadytw/adminBackup/wp-config.php
+
+✓ Config file permissions secured
+
+=== STEP 5: DELETE OLD MOJO INSTALLER FILES ===
+Timestamp: Sat Jan 10 22:16:04 MST 2026
+
+5.1 Backing up MOJO files before deletion...
+   Files backed up to: /home1/jarheads/security_audit_20260110_220908/backups/
+-rw------- 1 jarheads jarheads  29K Mar 27  2014 /home1/jarheads/security_audit_20260110_220908/backups/MOJOWordpressInstaller-TIT68wL7tW.php
+-rw-r--r-- 1 jarheads jarheads 3.0K Mar 27  2014 /home1/jarheads/security_audit_20260110_220908/backups/MOJOWordpressInstaller-TIT68wL7tW.state.json
+-rw-r--r-- 1 jarheads jarheads  29K Apr 10  2014 /home1/jarheads/security_audit_20260110_220908/backups/MOJOWordpressInstaller-hGboODPaWZ.php
+-rw-r--r-- 1 jarheads jarheads 3.0K Apr 10  2014 /home1/jarheads/security_audit_20260110_220908/backups/MOJOWordpressInstaller-hGboODPaWZ.state.json
+
+5.2 Deleting MOJO installer files...
+   Files to delete:
+-rw------- 1 jarheads jarheads  29K Mar 27  2014 /home1/jarheads/public_html/MOJOWordpressInstaller-TIT68wL7tW.php
+-rw-r--r-- 1 jarheads jarheads 3.0K Mar 27  2014 /home1/jarheads/public_html/MOJOWordpressInstaller-TIT68wL7tW.state.json
+-rw-r--r-- 1 jarheads jarheads  29K Apr 10  2014 /home1/jarheads/public_html/MOJOWordpressInstaller-hGboODPaWZ.php
+-rw-r--r-- 1 jarheads jarheads 3.0K Apr 10  2014 /home1/jarheads/public_html/MOJOWordpressInstaller-hGboODPaWZ.state.json
+
+5.3 Verifying deletion...
+ls: cannot access '/home1/jarheads/public_html/MOJO*': No such file or directory
+
+✓ Old installer files removed
+
+=== STEP 6: CREATE REVERT SCRIPT ===
+Timestamp: Sat Jan 10 22:18:22 MST 2026
+
+6.1 Revert script created: /home1/jarheads/security_audit_20260110_220908/REVERT_CHANGES.sh
+   To revert all changes, run:
+   bash /home1/jarheads/security_audit_20260110_220908/REVERT_CHANGES.sh
+
+✓ Revert script ready
+
+
+========================================
+FINAL SUMMARY - SECURITY FIXES APPLIED
+========================================
+
+✅ CRITICAL ISSUES RESOLVED:
+
+1. DATABASE CREDENTIALS SECURED
+   - Moved db_config.php from public_html to ~/private/
+   - Set permissions to 600 (owner read/write only)
+   - Updated seed_route.php to reference new location
+   - Database password NO LONGER publicly accessible
+
+2. LOG FILES SECURED
+   - Moved 6 log files from public_html to ~/logs/
+   - Files moved:
+     * tomtom_api.log (3.7MB)
+     * api.log (538KB)
+     * importer.log (63KB)
+     * proxy.log (12KB)
+     * api-bck.log (117KB)
+     * importer-bck.log (26KB)
+   - Logs NO LONGER publicly accessible via web browser
+
+3. CONFIG FILE PERMISSIONS HARDENED
+   - Changed wp-config.php files from 644 to 600
+   - Files secured:
+     * ~/public_html/wp-config.php
+     * ~/public_html/canadytw/wp-config.php
+     * ~/public_html/canadytw/adminBackup/wp-config.php
+   - Config files NO LONGER world-readable
+
+4. DANGEROUS INSTALLER FILES REMOVED
+   - Deleted 4 old MOJO WordPress installer files (from 2014)
+   - These contained eval() and exec() functions
+   - Remote code execution risk ELIMINATED
+
+========================================
+FILES MODIFIED/MOVED:
+========================================
+
+MOVED:
+  ~/public_html/db_config.php → ~/private/db_config.php
+  ~/public_html/*.log → ~/logs/*.log
+
+MODIFIED:
+  ~/public_html/seed_route.php (updated config path)
+  ~/public_html/wp-config.php (permissions: 644 → 600)
+  ~/public_html/canadytw/wp-config.php (permissions: 644 → 600)
+  ~/public_html/canadytw/adminBackup/wp-config.php (permissions: 644 → 600)
+
+DELETED:
+  ~/public_html/MOJOWordpressInstaller-TIT68wL7tW.php
+  ~/public_html/MOJOWordpressInstaller-TIT68wL7tW.state.json
+  ~/public_html/MOJOWordpressInstaller-hGboODPaWZ.php
+  ~/public_html/MOJOWordpressInstaller-hGboODPaWZ.state.json
+
+========================================
+BACKUP LOCATIONS:
+========================================
+
+All original files backed up to:
+  /home1/jarheads/security_audit_20260110_220908/backups/
+
+Backup files:
+  - db_config.php.backup
+  - seed_route.php.backup
+  - wp-config.php.backup
+  - canadytw-wp-config.php.backup
+  - adminBackup-wp-config.php.backup
+  - MOJO* files (4 files)
+
+========================================
+REVERT INSTRUCTIONS:
+========================================
+
+If you need to undo ALL changes:
+  bash ~/security_audit_20260110_220908/REVERT_CHANGES.sh
+
+⚠️  WARNING: Reverting will restore ALL security vulnerabilities!
+
+========================================
+NEXT STEPS - MANUAL ACTION REQUIRED:
+========================================
+
+1. UPDATE CUSTOM SCRIPTS
+   The following scripts may need updating to use new log locations:
+   - fetch_tomtom.php (if it writes to tomtom_api.log)
+   - Any script writing to api.log, importer.log, etc.
+   
+   Change log paths from:
+     OLD: ~/public_html/filename.log
+     NEW: ~/logs/filename.log
+
+2. TEST WEBSITE FUNCTIONALITY
+   - Visit jarheads.net and test all features
+   - Check that database connections still work
+   - Verify WordPress sites function correctly
+   - Test any custom PHP scripts
+
+3. CHANGE DATABASE PASSWORD (RECOMMENDED)
+   Since the old password was exposed in public_html:
+   - Change password in cPanel
+   - Update ~/private/db_config.php with new password
+
+4. MONITOR ERROR LOGS
+   Check ~/public_html/error_log for any new errors:
+     tail -f ~/public_html/error_log
+
+========================================
+SECURITY IMPROVEMENTS ACHIEVED:
+========================================
+
+✅ Database credentials protected
+✅ API logs no longer publicly accessible
+✅ Configuration files hardened
+✅ Old vulnerable installers removed
+✅ All changes reversible with backups
+✅ Complete audit trail maintained
+
+Audit completed: 2026-01-10 22:18
+
+========================================
+✅ SECURITY AUDIT COMPLETE
+========================================
+
+Full action log: /home1/jarheads/security_audit_20260110_220908/action_log.txt
+Revert script: /home1/jarheads/security_audit_20260110_220908/REVERT_CHANGES.sh
+Backups location: /home1/jarheads/security_audit_20260110_220908/backups/
+

@@ -1,0 +1,16 @@
+# Core dependencies
+feedparser==6.0.11
+requests==2.32.4
+beautifulsoup4==4.12.3
+lxml==5.1.0
+python-dateutil==2.8.2
+schedule==1.2.0
+
+# Security - Credential management
+python-dotenv==1.0.0
+
+# Optional: Browser automation (requires VPS/dedicated server, not shared hosting)
+# playwright==1.40.0
+
+# Optional: NLP with spaCy (requires VPS/dedicated server, not shared hosting)
+# spacy==3.7.2

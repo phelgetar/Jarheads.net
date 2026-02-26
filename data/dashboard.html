@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marine Corps News Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 40px 0;
+            border-bottom: 3px solid #c41e3a;
+        }
+        
+        header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        header p {
+            font-size: 1.2em;
+            color: #ddd;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid rgba(196, 30, 58, 0.3);
+            transition: transform 0.3s, border-color 0.3s;
+            cursor: pointer;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: #c41e3a;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .stat-card.active {
+            border-color: #ffd700;
+            background: rgba(196, 30, 58, 0.3);
+        }
+        
+        .stat-card h3 {
+            font-size: 2.5em;
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+        
+        .stat-card p {
+            color: #ddd;
+            font-size: 1.1em;
+        }
+        
+        .filters {
+            margin: 30px 0;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .filter-btn {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(196, 30, 58, 0.5);
+            color: #fff;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1em;
+        }
+        
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: #c41e3a;
+            border-color: #ffd700;
+            transform: scale(1.05);
+        }
+        
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+        
+        .news-item {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            border-left: 4px solid #c41e3a;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .news-item:hover {
+            transform: translateX(10px);
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 5px 15px rgba(196, 30, 58, 0.3);
+        }
+
+        .news-item .news-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 2px solid rgba(196, 30, 58, 0.3);
+        }
+
+        .news-item .news-content {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .news-item.no-image .news-content {
+            padding: 25px;
+        }
+        
+        .news-item .category {
+            display: inline-block;
+            padding: 5px 12px;
+            background: #c41e3a;
+            color: #ffd700;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            width: fit-content;
+        }
+        
+        .news-item h3 {
+            font-size: 1.3em;
+            margin-bottom: 10px;
+            color: #ffd700;
+            line-height: 1.4;
+        }
+        
+        .news-item .source {
+            font-size: 0.9em;
+            color: #aaa;
+            margin-bottom: 8px;
+        }
+        
+        .news-item .description {
+            font-size: 0.95em;
+            line-height: 1.6;
+            color: #ddd;
+            margin: 12px 0;
+            flex-grow: 1;
+        }
+        
+        .news-item .date {
+            font-size: 0.85em;
+            color: #888;
+            margin-top: 10px;
+        }
+        
+        .news-item a {
+            display: inline-block;
+            margin-top: 12px;
+            color: #ffd700;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+        
+        .news-item a:hover {
+            color: #c41e3a;
+            text-decoration: underline;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.5em;
+            color: #ffd700;
+        }
+        
+        .category.awards { background: #4CAF50; }
+        .category.promotions { background: #2196F3; }
+        .category.equipment { background: #FF9800; }
+        .category.podcast { background: #9C27B0; }
+        .category.operations { background: #F44336; }
+        .category.training { background: #00BCD4; }
+
+        .controls {
+            margin: 20px 0;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .control-group label {
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 0.95em;
+        }
+
+        .control-group select,
+        .control-group input {
+            padding: 8px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(196, 30, 58, 0.5);
+            color: #fff;
+            border-radius: 5px;
+            font-size: 0.95em;
+        }
+
+        .control-group select:focus,
+        .control-group input:focus {
+            outline: none;
+            border-color: #ffd700;
+        }
+
+        .control-group button {
+            padding: 8px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(196, 30, 58, 0.5);
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.95em;
+        }
+
+        .control-group button:hover {
+            background: #c41e3a;
+            border-color: #ffd700;
+        }
+
+        .active-filter-info {
+            text-align: center;
+            color: #ffd700;
+            font-size: 0.95em;
+            margin: 10px 0;
+            font-style: italic;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            margin-top: 50px;
+            border-top: 2px solid rgba(196, 30, 58, 0.3);
+            color: #aaa;
+        }
+    </style>
+    <!-- Twenty Fourteen Theme CSS Override Instructions:
+
+    Add this CSS to WordPress Admin → Appearance → Customize → Additional CSS:
+
+    /* TWENTY FOURTEEN THEME - Remove Left Sidebar on Marine Corps News Page */
+
+    /* Force single-column layout (no sidebar) */
+    .page-id-120.sidebar .site-content .content-area {
+        float: none !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+        padding: 0 20px !important;
+    }
+
+    /* Hide the sidebar completely */
+    .page-id-120 .content-sidebar,
+    .page-id-120 #secondary {
+        display: none !important;
+        width: 0 !important;
+    }
+
+    /* Remove the body class that triggers sidebar layout */
+    .page-id-120.sidebar .site-content {
+        padding: 0 !important;
+    }
+
+    /* Override Twenty Fourteen's default widths */
+    .page-id-120 .site {
+        max-width: 100% !important;
+    }
+
+    .page-id-120 .site-content {
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+
+    /* Fix content area positioning */
+    .page-id-120 .content-area,
+    .page-id-120 .site-main {
+        margin: 0 auto !important;
+        max-width: 1260px !important;
+        width: 100% !important;
+        padding: 0 20px !important;
+    }
+
+    /* Ensure entry content is full width */
+    .page-id-120 .entry-content,
+    .page-id-120 .entry-header {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    -->
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🇺🇸 MARINE CORPS NEWS 🇺🇸</h1>
+            <p>Real-time aggregation from across the web</p>
+            <p style="font-size: 0.9em; margin-top: 10px;">jarheads.net</p>
+        </header>
+        
+        <div class="stats">
+            <div class="stat-card" data-filter="all" title="Click to show all items">
+                <h3 id="totalItems">-</h3>
+                <p>Total Items</p>
+            </div>
+            <div class="stat-card" data-filter="today" title="Click to show today's items">
+                <h3 id="todayItems">-</h3>
+                <p>Today</p>
+            </div>
+            <div class="stat-card" data-filter="week" title="Click to show this week's items">
+                <h3 id="weekItems">-</h3>
+                <p>This Week</p>
+            </div>
+            <div class="stat-card" data-filter="sources" title="Click to view all sources">
+                <h3 id="sources">-</h3>
+                <p>Sources</p>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="sortOrder">Sort:</label>
+                <select id="sortOrder">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="dateFrom">From:</label>
+                <input type="date" id="dateFrom">
+            </div>
+            <div class="control-group">
+                <label for="dateTo">To:</label>
+                <input type="date" id="dateTo">
+            </div>
+            <div class="control-group">
+                <button id="applyDateFilter">Apply Date Filter</button>
+                <button id="clearDateFilter">Clear</button>
+            </div>
+        </div>
+
+        <div id="activeFilterInfo" class="active-filter-info"></div>
+        
+        <div class="filters">
+            <button class="filter-btn active" data-category="all">All News</button>
+            <button class="filter-btn" data-category="awards">🎖️ Awards</button>
+            <button class="filter-btn" data-category="promotions">⭐ Promotions</button>
+            <button class="filter-btn" data-category="equipment">🔧 Equipment</button>
+            <button class="filter-btn" data-category="podcast">🎙️ Podcasts</button>
+            <button class="filter-btn" data-category="operations">⚔️ Operations</button>
+            <button class="filter-btn" data-category="training">🎓 Training</button>
+        </div>
+        
+        <div id="newsContainer" class="loading">
+            Loading Marine Corps news...
+        </div>
+        
+        <footer>
+            <p>Semper Fidelis</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">
+                Data aggregated from official USMC sources, news outlets, and defense media
+            </p>
+        </footer>
+    </div>
+    
+    <script>
+        let allNews = [];
+        let filteredNews = [];
+        let currentCategoryFilter = 'all';
+        let currentDateFilter = null;
+        let currentSortOrder = 'newest';
+
+        // Load data from JSON file
+        async function loadNews() {
+            try {
+                const response = await fetch('marine_corps_news.json');
+                const data = await response.json();
+                allNews = data.items || [];
+
+                updateStats(data);
+                applyAllFilters();
+            } catch (error) {
+                document.getElementById('newsContainer').innerHTML =
+                    '<p style="color: #c41e3a;">Error loading news. Please ensure marine_corps_news.json exists.</p>';
+                console.error('Error loading news:', error);
+            }
+        }
+
+        function updateStats(data) {
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+            const todayCount = allNews.filter(item => {
+                const itemDate = new Date(item.scraped_at);
+                return itemDate >= today;
+            }).length;
+
+            const weekCount = allNews.filter(item => {
+                const itemDate = new Date(item.scraped_at);
+                return itemDate >= weekAgo;
+            }).length;
+
+            const sources = new Set(allNews.map(item => item.source));
+
+            document.getElementById('totalItems').textContent = data.total_items || allNews.length;
+            document.getElementById('todayItems').textContent = todayCount;
+            document.getElementById('weekItems').textContent = weekCount;
+            document.getElementById('sources').textContent = sources.size;
+        }
+
+        function applyAllFilters() {
+            let items = [...allNews];
+
+            // Apply category filter
+            if (currentCategoryFilter !== 'all') {
+                items = items.filter(item => item.category === currentCategoryFilter);
+            }
+
+            // Apply date filter
+            if (currentDateFilter) {
+                items = items.filter(item => {
+                    const itemDate = new Date(item.scraped_at);
+
+                    if (currentDateFilter.type === 'today') {
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        return itemDate >= today;
+                    } else if (currentDateFilter.type === 'week') {
+                        const weekAgo = new Date();
+                        weekAgo.setDate(weekAgo.getDate() - 7);
+                        weekAgo.setHours(0, 0, 0, 0);
+                        return itemDate >= weekAgo;
+                    } else if (currentDateFilter.type === 'custom') {
+                        const fromDate = currentDateFilter.from ? new Date(currentDateFilter.from) : null;
+                        const toDate = currentDateFilter.to ? new Date(currentDateFilter.to) : null;
+
+                        if (toDate) {
+                            toDate.setHours(23, 59, 59, 999);
+                        }
+
+                        if (fromDate && toDate) {
+                            return itemDate >= fromDate && itemDate <= toDate;
+                        } else if (fromDate) {
+                            return itemDate >= fromDate;
+                        } else if (toDate) {
+                            return itemDate <= toDate;
+                        }
+                    }
+                    return true;
+                });
+            }
+
+            // Apply sorting
+            items.sort((a, b) => {
+                const dateA = new Date(a.published_date || a.scraped_at);
+                const dateB = new Date(b.published_date || b.scraped_at);
+                return currentSortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+            });
+
+            filteredNews = items;
+            displayNews(items);
+            updateFilterInfo();
+        }
+
+        function displayNews(items) {
+            const container = document.getElementById('newsContainer');
+
+            if (items.length === 0) {
+                container.innerHTML = '<p class="loading">No news items found with current filters.</p>';
+                return;
+            }
+
+            container.className = 'news-grid';
+            container.innerHTML = items.map(item => `
+                <div class="news-item ${item.featured_image_url ? '' : 'no-image'}" data-category="${item.category}">
+                    ${item.featured_image_url ? `<img class="news-image" src="${item.featured_image_url}" alt="${item.title}" loading="lazy" onerror="this.style.display='none'">` : ''}
+                    <div class="news-content">
+                        <span class="category ${item.category}">${item.category}</span>
+                        <h3>${item.title}</h3>
+                        <p class="source">📰 ${item.source}</p>
+                        <p class="description">${item.description || 'No description available'}</p>
+                        <p class="date">📅 ${formatDate(item.published_date || item.scraped_at)}</p>
+                        <a href="${item.url}" target="_blank">Read Full Story →</a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffTime = Math.abs(now - date);
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) return 'Today';
+            if (diffDays === 1) return 'Yesterday';
+            if (diffDays < 7) return `${diffDays} days ago`;
+
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        function updateFilterInfo() {
+            const infoDiv = document.getElementById('activeFilterInfo');
+            const parts = [];
+
+            if (currentCategoryFilter !== 'all') {
+                parts.push(`Category: ${currentCategoryFilter}`);
+            }
+
+            if (currentDateFilter) {
+                if (currentDateFilter.type === 'today') {
+                    parts.push('Date: Today');
+                } else if (currentDateFilter.type === 'week') {
+                    parts.push('Date: This Week');
+                } else if (currentDateFilter.type === 'custom') {
+                    const fromStr = currentDateFilter.from || 'Beginning';
+                    const toStr = currentDateFilter.to || 'Now';
+                    parts.push(`Date: ${fromStr} to ${toStr}`);
+                }
+            }
+
+            parts.push(`Sort: ${currentSortOrder === 'newest' ? 'Newest First' : 'Oldest First'}`);
+            parts.push(`Showing ${filteredNews.length} of ${allNews.length} items`);
+
+            infoDiv.textContent = parts.join(' | ');
+        }
+
+        // Event listeners for category filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentCategoryFilter = btn.dataset.category;
+                applyAllFilters();
+            });
+        });
+
+        // Event listeners for stat cards
+        document.querySelectorAll('.stat-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const filterType = card.dataset.filter;
+
+                // Remove active class from all stat cards
+                document.querySelectorAll('.stat-card').forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+
+                // Clear date inputs
+                document.getElementById('dateFrom').value = '';
+                document.getElementById('dateTo').value = '';
+
+                if (filterType === 'all') {
+                    currentDateFilter = null;
+                } else if (filterType === 'today') {
+                    currentDateFilter = { type: 'today' };
+                } else if (filterType === 'week') {
+                    currentDateFilter = { type: 'week' };
+                } else if (filterType === 'sources') {
+                    // Show all items sorted by source (just clear date filter)
+                    currentDateFilter = null;
+                }
+
+                applyAllFilters();
+            });
+        });
+
+        // Event listener for sort order
+        document.getElementById('sortOrder').addEventListener('change', (e) => {
+            currentSortOrder = e.target.value;
+            applyAllFilters();
+        });
+
+        // Event listener for date filter apply button
+        document.getElementById('applyDateFilter').addEventListener('click', () => {
+            const fromDate = document.getElementById('dateFrom').value;
+            const toDate = document.getElementById('dateTo').value;
+
+            if (fromDate || toDate) {
+                currentDateFilter = {
+                    type: 'custom',
+                    from: fromDate,
+                    to: toDate
+                };
+
+                // Remove active class from stat cards
+                document.querySelectorAll('.stat-card').forEach(c => c.classList.remove('active'));
+
+                applyAllFilters();
+            }
+        });
+
+        // Event listener for clear date filter button
+        document.getElementById('clearDateFilter').addEventListener('click', () => {
+            document.getElementById('dateFrom').value = '';
+            document.getElementById('dateTo').value = '';
+            currentDateFilter = null;
+
+            // Remove active class from stat cards
+            document.querySelectorAll('.stat-card').forEach(c => c.classList.remove('active'));
+
+            applyAllFilters();
+        });
+
+        // Load news on page load
+        loadNews();
+
+        // Refresh every 5 minutes
+        setInterval(loadNews, 5 * 60 * 1000);
+    </script>
+</body>
+</html>
