@@ -325,6 +325,40 @@ function get_geo_stats($limit = 10) {
 }
 
 /**
+ * Get US state/region breakdown (last 24 hours)
+ *
+ * @param int $limit Number of states
+ * @return array State statistics
+ */
+function get_state_stats($limit = 20) {
+    global $wpdb;
+    $table = $wpdb->prefix . 'jh_page_views';
+
+    return $wpdb->get_results($wpdb->prepare("
+        SELECT
+            region,
+            country_code,
+            COUNT(*) as visits,
+            COUNT(DISTINCT visitor_session_id) as unique_visitors,
+            ROUND(COUNT(*) * 100.0 / (
+                SELECT COUNT(*) FROM {$table}
+                WHERE viewed_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+                  AND country_code = 'US'
+                  AND region IS NOT NULL
+                  AND region != ''
+            ), 1) as percentage
+        FROM {$table}
+        WHERE viewed_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+          AND country_code = 'US'
+          AND region IS NOT NULL
+          AND region != ''
+        GROUP BY region
+        ORDER BY visits DESC
+        LIMIT %d
+    ", $limit));
+}
+
+/**
  * Get device type breakdown (last 24 hours)
  *
  * @return array Device statistics
@@ -383,6 +417,7 @@ $recent_comments = get_recent_comments(20);
 $top_articles = get_top_articles(10);
 $geo_stats = get_geo_stats(10);
 $device_stats = get_device_stats();
+$state_stats = get_state_stats(20);
 
 ?>
 <!DOCTYPE html>
@@ -858,6 +893,24 @@ $device_stats = get_device_stats();
                         <li>
                             <span><?php echo esc_html($geo->country_name); ?></span>
                             <span><strong><?php echo number_format($geo->visits); ?></strong> visits (<?php echo $geo->percentage; ?>%)</span>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php endif; ?>
+
+            <h3 style="margin: 30px 0 15px; color: var(--text-dark);">US State Breakdown</h3>
+            <?php if (empty($state_stats)) : ?>
+                <p style="color: var(--text-gray);">No US state data available yet.</p>
+            <?php else : ?>
+                <ul class="geo-list">
+                    <?php foreach ($state_stats as $state) : ?>
+                        <li>
+                            <span><?php echo esc_html($state->region); ?></span>
+                            <span>
+                                <strong><?php echo number_format($state->visits); ?></strong> visits
+                                (<?php echo number_format($state->unique_visitors); ?> unique)
+                                &mdash; <?php echo $state->percentage; ?>%
+                            </span>
                         </li>
                     <?php endforeach; ?>
                 </ul>
