@@ -1,0 +1,12 @@
+/*
+Theme Name:   Twenty Fourteen Child (Jarheads Marine News)
+Theme URI:    https://jarheads.net/
+Description:  Child theme of Twenty Fourteen for jarheads.net. Adds the full-width, responsive Marine Corps News grid (archive-marine_news.php) and the single-article template (single-marine_news.php) without modifying the parent theme, so Twenty Fourteen updates won't wipe the customizations.
+Author:       Marine Corps News Team
+Template:     twentyfourteen
+Version:      1.0.0
+*/
+
+/* The page-level styling lives inside the template files (archive-marine_news.php
+   and single-marine_news.php) as scoped inline <style> blocks. Add any global
+   tweaks for the Marine News pages below. */

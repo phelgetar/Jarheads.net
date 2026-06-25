@@ -50,6 +50,7 @@ data/*.md
 
 # Config and secrets
 config/config.ini
+nginx/GeoIP.conf
 .env
 .env.local
 .env.production
@@ -65,3 +66,6 @@ scripts/backups/*.tar.gz
 ~$*
 temp/
 .cache/
+
+# WordPress child theme build artifact
+wordpress/twentyfourteen-child.zip
