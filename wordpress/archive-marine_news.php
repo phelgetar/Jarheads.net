@@ -32,7 +32,9 @@ get_header();
     }
 
     .marine-news-archive {
-        max-width: 1200px;
+        /* Fluid up to ultrawide: use the viewport but keep a margin and a
+           sane upper bound so cards never stretch absurdly wide. */
+        max-width: min(2200px, 95vw);
         margin: 0 auto;
         padding: 40px 20px;
         background: white;
@@ -55,7 +57,7 @@ get_header();
 
     .news-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
         gap: 25px;
         margin-bottom: 40px;
     }
