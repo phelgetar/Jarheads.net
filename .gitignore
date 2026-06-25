@@ -69,3 +69,9 @@ temp/
 
 # WordPress child theme build artifact
 wordpress/twentyfourteen-child.zip
+
+# Local-only SFTP deploy credentials (never commit)
+.deploy_creds
+.deploy_backup/
+.playwright-mcp/
+marine-news-2560-6col.jpeg

@@ -31,6 +31,13 @@ get_header();
         padding: 0;
     }
 
+    /* Twenty Fourteen caps its #page wrapper at 1260px, which would clamp the
+       grid no matter how wide our container is. Lift it on this page only
+       (this style block is output only on the marine_news archive). */
+    #page {
+        max-width: min(2200px, 96vw) !important;
+    }
+
     .marine-news-archive {
         /* Fluid up to ultrawide: use the viewport but keep a margin and a
            sane upper bound so cards never stretch absurdly wide. */
