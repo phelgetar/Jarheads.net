@@ -164,6 +164,9 @@ class EnhancedMarineCorpsAggregator:
         # Cached per-crawl cutoff date; computed once and reused for every
         # article so we don't reopen the DB (and re-log) on each check.
         self._cutoff_date = None
+        # Count of enrichment fetches blocked by a remote WAF (marines.mil sits
+        # behind Akamai), summarized once per crawl instead of warning per item.
+        self._waf_blocked_count = 0
         self.max_workers = max_workers or config.max_workers
         self.rate_limiter = Semaphore(self.max_workers)
 
@@ -549,10 +552,20 @@ class EnhancedMarineCorpsAggregator:
                 'featured_image_url': featured_image
             }
 
+        except requests.exceptions.HTTPError as e:
+            status = e.response.status_code if e.response is not None else None
+            if status == 403:
+                # marines.mil's Akamai WAF blocks our crawler's network outright.
+                # Count it and summarize once per crawl rather than warn per item.
+                self._waf_blocked_count += 1
+                logger.debug(f"Enrichment blocked (403) for {url}")
+            else:
+                logger.warning(f"Error enriching metadata for {url}: {e}")
+            return {'tags': existing_tags, 'author': None, 'featured_image_url': existing_image}
         except Exception as e:
             logger.warning(f"Error enriching metadata for {url}: {e}")
             return {'tags': existing_tags, 'author': None, 'featured_image_url': existing_image}
-    
+
     def is_duplicate(self, content_hash: str) -> bool:
         """Check if item already exists in database"""
         conn = sqlite3.connect(self.db_path)
@@ -701,6 +714,7 @@ class EnhancedMarineCorpsAggregator:
         # Recompute the cutoff once for this crawl (the scheduler reuses one
         # aggregator instance across runs).
         self._cutoff_date = None
+        self._waf_blocked_count = 0
 
         stats = {
             'total_found': 0,
@@ -719,6 +733,12 @@ class EnhancedMarineCorpsAggregator:
         # Crawl podcast feeds
         logger.info("=== Crawling Podcast Feeds ===")
         all_items.extend(self.crawl_rss_feeds(self.PODCAST_FEEDS))
+
+        if self._waf_blocked_count:
+            logger.info(
+                f"marines.mil enrichment blocked by Akamai WAF "
+                f"({self._waf_blocked_count} articles) — using RSS metadata"
+            )
 
         # Save items
         logger.info(f"=== Processing {len(all_items)} items ===")
