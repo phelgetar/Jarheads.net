@@ -244,6 +244,12 @@ get_header(); // Remove if you want independent styling
                 </div>
             </header>
 
+            <?php if (has_post_thumbnail()) : ?>
+            <div class="article-featured-image" style="margin: 20px 0;">
+                <?php the_post_thumbnail('large', array('style' => 'width:100%;height:auto;border-radius:8px;display:block;')); ?>
+            </div>
+            <?php endif; ?>
+
             <div class="article-content">
                 <?php the_content(); ?>
             </div>

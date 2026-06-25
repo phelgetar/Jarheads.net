@@ -496,6 +496,12 @@ get_header(); // Remove this line if you want completely independent styling
                 $is_podcast = ($category_slug === 'podcast');
                 ?>
                 <article class="news-article <?php echo $is_podcast ? 'podcast-article' : ''; ?>" data-category="<?php echo esc_attr($category_slug); ?>">
+                    <?php if (has_post_thumbnail()) : ?>
+                    <a href="<?php the_permalink(); ?>" class="article-thumb">
+                        <?php the_post_thumbnail('medium_large', array('loading' => 'lazy', 'style' => 'width:100%;height:200px;object-fit:cover;display:block;')); ?>
+                    </a>
+                    <?php endif; ?>
+
                     <?php
                     // Display category badge
                     if (!empty($terms)) :

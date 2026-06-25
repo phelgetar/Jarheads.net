@@ -611,6 +611,12 @@ get_header();
             $is_podcast = ($category_slug === 'podcast');
             ?>
             <article class="news-article-card <?php echo $is_podcast ? 'podcast-article' : ''; ?>">
+                <?php if (has_post_thumbnail()) : ?>
+                <a href="<?php the_permalink(); ?>" class="article-thumb">
+                    <?php the_post_thumbnail('medium_large', array('loading' => 'lazy', 'style' => 'width:100%;height:200px;object-fit:cover;display:block;')); ?>
+                </a>
+                <?php endif; ?>
+
                 <?php if (!empty($terms) && !is_wp_error($terms)) : ?>
                 <span class="article-category-badge <?php echo $is_podcast ? 'podcast' : ''; ?>">
                     <?php echo esc_html($terms[0]->name); ?>

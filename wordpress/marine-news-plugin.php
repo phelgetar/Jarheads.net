@@ -157,6 +157,12 @@ function auto_import_marine_news() {
             update_post_meta($post_id, 'news_author', sanitize_text_field($article['author'] ?? ''));
             update_post_meta($post_id, 'original_published_date', $article['published_date'] ?? $article['published'] ?? '');
 
+            // Sideload the article's featured image into the Media Library and
+            // set it as the post thumbnail (skips if one is already attached).
+            if (!empty($article['featured_image_url'])) {
+                marine_news_set_featured_image($post_id, $article['featured_image_url'], $article['title']);
+            }
+
             if (!empty($article['tags']) && is_array($article['tags'])) {
                 wp_set_post_tags($post_id, $article['tags'], false);
             }
@@ -214,4 +220,36 @@ function parse_article_date($article) {
     }
 
     return date('Y-m-d H:i:s', $timestamp);
+}
+
+if (!function_exists('marine_news_set_featured_image')) {
+    /**
+     * Download an external image into the WordPress Media Library and set it as
+     * the given post's featured thumbnail. No-op if the post already has a
+     * thumbnail, so repeated cron imports don't re-download or duplicate media.
+     *
+     * @param int    $post_id   Target post ID.
+     * @param string $image_url Remote image URL (e.g. featured_image_url).
+     * @param string $desc      Description / alt text for the attachment.
+     */
+    function marine_news_set_featured_image($post_id, $image_url, $desc = '') {
+        if (empty($image_url) || has_post_thumbnail($post_id)) {
+            return;
+        }
+
+        // media_sideload_image() and its dependencies live in wp-admin and are
+        // not loaded on front-end / WP-Cron requests, so pull them in here.
+        require_once ABSPATH . 'wp-admin/includes/media.php';
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+        require_once ABSPATH . 'wp-admin/includes/image.php';
+
+        $attachment_id = media_sideload_image($image_url, $post_id, $desc, 'id');
+
+        if (is_wp_error($attachment_id)) {
+            error_log('Marine News: featured image sideload failed for post ' . $post_id . ' (' . $image_url . '): ' . $attachment_id->get_error_message());
+            return;
+        }
+
+        set_post_thumbnail($post_id, $attachment_id);
+    }
 }

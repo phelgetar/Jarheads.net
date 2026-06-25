@@ -24,6 +24,36 @@ if (!is_user_logged_in() || !current_user_can('manage_options')) {
     }
 }
 
+if (!function_exists('marine_news_set_featured_image')) {
+    /**
+     * Download an external image into the WordPress Media Library and set it as
+     * the given post's featured thumbnail. No-op if the post already has a
+     * thumbnail, so re-running the importer doesn't re-download or duplicate media.
+     *
+     * @param int    $post_id   Target post ID.
+     * @param string $image_url Remote image URL (e.g. featured_image_url).
+     * @param string $desc      Description / alt text for the attachment.
+     */
+    function marine_news_set_featured_image($post_id, $image_url, $desc = '') {
+        if (empty($image_url) || has_post_thumbnail($post_id)) {
+            return;
+        }
+
+        require_once ABSPATH . 'wp-admin/includes/media.php';
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+        require_once ABSPATH . 'wp-admin/includes/image.php';
+
+        $attachment_id = media_sideload_image($image_url, $post_id, $desc, 'id');
+
+        if (is_wp_error($attachment_id)) {
+            error_log('Marine News: featured image sideload failed for post ' . $post_id . ' (' . $image_url . '): ' . $attachment_id->get_error_message());
+            return;
+        }
+
+        set_post_thumbnail($post_id, $attachment_id);
+    }
+}
+
 class MarineCorpsNewsImporter {
 
     private $json_file_path;
@@ -87,7 +117,7 @@ class MarineCorpsNewsImporter {
             'public' => true,
             'has_archive' => true,
             'show_in_rest' => true,
-            'supports' => array('title', 'editor', 'excerpt', 'comments', 'custom-fields'),
+            'supports' => array('title', 'editor', 'excerpt', 'comments', 'custom-fields', 'thumbnail'),
             'rewrite' => array('slug' => 'marine-news'),
             'menu_icon' => 'dashicons-megaphone',
             'capability_type' => 'post',
@@ -195,6 +225,11 @@ class MarineCorpsNewsImporter {
         update_post_meta($post_id, 'news_source', sanitize_text_field($article['source'] ?? 'Unknown'));
         update_post_meta($post_id, 'news_author', sanitize_text_field($article['author'] ?? ''));
         update_post_meta($post_id, 'original_published_date', $article['published_date'] ?? $article['published'] ?? '');
+
+        // Sideload the article's featured image and set it as the post thumbnail.
+        if (!empty($article['featured_image_url'])) {
+            marine_news_set_featured_image($post_id, $article['featured_image_url'], $article['title']);
+        }
 
         // Add tags if present
         if (!empty($article['tags']) && is_array($article['tags'])) {
