@@ -161,6 +161,9 @@ class EnhancedMarineCorpsAggregator:
             db_path = str(DATA_DIR / 'marine_corps_news.db')
         self.db_path = db_path
         self.max_age_days = max_age_days
+        # Cached per-crawl cutoff date; computed once and reused for every
+        # article so we don't reopen the DB (and re-log) on each check.
+        self._cutoff_date = None
         self.max_workers = max_workers or config.max_workers
         self.rate_limiter = Semaphore(self.max_workers)
 
@@ -278,9 +281,17 @@ class EnhancedMarineCorpsAggregator:
         conn.close()
     
     def get_cutoff_date(self) -> datetime:
-        """Get the cutoff date for article collection"""
+        """Get the cutoff date for article collection.
+
+        Memoized per crawl: the first call computes the cutoff (one DB read,
+        one log line) and caches it. ``run_full_crawl`` clears the cache so each
+        scheduled run recomputes a fresh cutoff.
+        """
+        if self._cutoff_date is not None:
+            return self._cutoff_date
+
         last_run = self.get_last_run_time()
-        
+
         if last_run:
             # Use last run time if it's within the max age
             max_cutoff = datetime.now() - timedelta(days=self.max_age_days)
@@ -290,7 +301,8 @@ class EnhancedMarineCorpsAggregator:
             # First run: go back 90 days
             cutoff = datetime.now() - timedelta(days=self.max_age_days)
             logger.info(f"First run: collecting articles from last {self.max_age_days} days")
-        
+
+        self._cutoff_date = cutoff
         return cutoff
     
     def is_within_date_range(self, date_str: str) -> bool:
@@ -685,7 +697,11 @@ class EnhancedMarineCorpsAggregator:
         logger.info("Enhanced Marine Corps News Aggregation")
         logger.info(f"Max article age: {self.max_age_days} days")
         logger.info("=" * 60)
-        
+
+        # Recompute the cutoff once for this crawl (the scheduler reuses one
+        # aggregator instance across runs).
+        self._cutoff_date = None
+
         stats = {
             'total_found': 0,
             'new_items': 0,
