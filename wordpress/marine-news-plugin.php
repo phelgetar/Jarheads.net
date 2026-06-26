@@ -233,7 +233,12 @@ if (!function_exists('marine_news_set_featured_image')) {
      * @param string $desc      Description / alt text for the attachment.
      */
     function marine_news_set_featured_image($post_id, $image_url, $desc = '') {
-        if (empty($image_url) || has_post_thumbnail($post_id)) {
+        // Skip if there's no URL, a thumbnail already exists, or a prior attempt
+        // failed. Some sources (e.g. media.defense.gov) block our server with a
+        // 403, and without this the hourly cron would re-fetch known-bad URLs
+        // on every run. Clear the '_featured_image_failed' meta to force a retry.
+        if (empty($image_url) || has_post_thumbnail($post_id)
+            || get_post_meta($post_id, '_featured_image_failed', true)) {
             return;
         }
 
@@ -246,6 +251,7 @@ if (!function_exists('marine_news_set_featured_image')) {
         $attachment_id = media_sideload_image($image_url, $post_id, $desc, 'id');
 
         if (is_wp_error($attachment_id)) {
+            update_post_meta($post_id, '_featured_image_failed', time());
             error_log('Marine News: featured image sideload failed for post ' . $post_id . ' (' . $image_url . '): ' . $attachment_id->get_error_message());
             return;
         }
