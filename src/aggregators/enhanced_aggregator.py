@@ -83,8 +83,31 @@ class EnhancedMarineCorpsAggregator:
         'Marine Corps Times': 'https://www.marinecorpstimes.com/arc/outboundfeeds/rss/',
         'Stars and Stripes Marines': 'https://www.stripes.com/rss/branches/marines',
         'DVIDS Marines': 'https://www.dvidshub.net/rss/news?unit=USMC',
+
+        # Additional official commands (DNN RSS)
+        'Marine Corps Systems Command': 'https://www.marcorsyscom.marines.mil/DesktopModules/ArticleCS/RSS.ashx?ContentType=1&max=50',
+        'Marine Corps University': 'https://www.usmcu.edu/DesktopModules/ArticleCS/RSS.ashx?ContentType=1&max=50',
+
+        # Marine Corps Association magazines
+        'MCA News': 'https://mca-marines.org/feed/',
+        'Marine Corps Gazette': 'https://mca-marines.org/gazette/feed/',
+
+        # Marine-focused / military news & culture (filtered for USMC relevance)
+        'Task & Purpose': 'https://taskandpurpose.com/feed/',
+        'The War Horse': 'https://thewarhorse.org/feed/',
+        'Sandboxx News': 'https://www.sandboxx.us/blog/feed/',
+        'We Are The Mighty': 'https://www.wearethemighty.com/feed/',
+        'Terminal Lance': 'https://terminallance.com/feed/',  # USMC comic / culture
+        'Irregular Warfare': 'https://irregularwarfare.org/feed/',
+
+        # Veterans
+        'VA News': 'https://news.va.gov/feed/',
+
+        # Community & social
+        'Reddit r/USMC': 'https://www.reddit.com/r/USMC/.rss',  # Reddit may rate-limit (429) under load
+        'USMC YouTube': 'https://www.youtube.com/feeds/videos.xml?user=marines',
     }
-    
+
     # Podcast RSS Feeds
     PODCAST_FEEDS = {
         # Official Marine Corps Association Podcasts
