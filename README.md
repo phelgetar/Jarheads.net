@@ -74,6 +74,33 @@ The `src/scheduler.py` script runs crawls automatically:
 
 Modify the schedule in `src/scheduler.py` as needed.
 
+### Running locally without Docker
+
+The docker-compose setup (crawler + nginx dashboard) needs a Docker daemon.
+On a machine without one, the same two services run natively:
+
+```bash
+# Dashboard on http://127.0.0.1:8080/dashboard.html
+# (dashboard.html and the JSON files it fetches all live in data/, so serving
+# that folder reproduces the compose nginx web root exactly)
+python3 -m http.server 8080 --bind 127.0.0.1 --directory data
+
+# Scheduler (crawls every 6 hours, runs until stopped)
+./.venv/bin/python src/scheduler.py
+```
+
+Both are managed by the machine-wide dev-services script, which is the normal
+way to run them:
+
+```bash
+~/PycharmProjects/start-services.sh start dashboard    # or: scheduler
+~/PycharmProjects/start-services.sh status
+```
+
+Logs land in `~/Library/Logs/dev-services/jarheads-*.log`. Note: WordPress
+posting stays disabled until `JARHEADS_API_KEY` is set in `.env`; the scheduler
+says so at startup and crawls normally otherwise.
+
 ### Getting Recent Items
 ```python
 # Get items from last 7 days
